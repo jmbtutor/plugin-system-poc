@@ -21,9 +21,8 @@ class Base {
       name: 'base',
       /* If the plugin can stand in for another (possibly virtual)
        * plugin (i.e. conforms to its interface), the names should be
-       * provided here. Some built-in values are "data", "events", and
-       * "cache", but others may be used. A plugin implicitly provides
-       * itself, so its name does not need to appear here.
+       * provided here. A plugin implicitly provides itself, so its name
+       * does not need to appear here.
        */
       provides: [],
       /* If the plugin has dependencies on other plugins, the names of
