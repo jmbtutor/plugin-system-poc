@@ -76,4 +76,16 @@ class Base {
    */
   afterInit() {
   }
+
+  /* When a batch of plugins are registered, Core will call the
+   * `onPluginRegister` function to alert already-initialized plugins
+   * that other plugins have been registered. This can be used to enable
+   * some additional functionality when an optional dependency has been
+   * registered.
+   *
+   * Core will pass in an object whose keys are the exposed names of the
+   * plugins and whose values are the metadata objects of the plugins.
+   */
+  onPluginRegister(plugins) {
+  }
 }
