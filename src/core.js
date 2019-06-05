@@ -6,7 +6,7 @@
  * plugins are all the same.
  *
  * Core communicates with plugins through callbacks. Core expects
- * plugins to have certain 
+ * plugins to conform to a certain interface.
  *
  * To Core, a plugin:
  *  - is an object with a certain interface (e.g. has methods for
@@ -60,8 +60,8 @@ class Core {
    * Registration has the following steps:
    *  1. name registration
    *  2. dependency checking
-   *  2. initialization
-   *  3. post-initialization
+   *  3. initialization
+   *  4. post-initialization
    * Each of these steps will be completed on the entire collection of
    * new plugins before moving on to the next step.
    *
