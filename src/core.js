@@ -67,6 +67,10 @@ class Core {
    *
    * After these steps have been completed, plugins that have already
    * been registered will be notified of the new plugins.
+   *
+   * Such a process allows for circular dependencies between plugins, so
+   * long as the plugins with circular dependencies are registered
+   * together in the same batch.
    */
   registerPlugins(plugins) {
     /* The first step to registering the plugins is to collect all their
