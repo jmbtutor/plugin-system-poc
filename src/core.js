@@ -24,13 +24,25 @@ class Core {
     /* To tell if a plugin can safely be removed, we must know if a
      * plugin is required by any other plugin. We store this in a map
      * from plugin names to the names of the plugins that depend on it.
+     *
+     * This is an object with a null prototype to ensure that no
+     * properties are inherited. This also protects against plugins that
+     * are named `__proto__`.
+     *
+     * TODO: should the prototype be Object.freeze({}) instead?
      */
-    this.dependencyMap = {};
+    this.dependencyMap = Object.create(null);
     /* Plugins provide a value to Core to expose through Core. To avoid
      * collisions with internal names, we expose them through a
      * `plugins` object, so collisions are limited only between plugins.
+     *
+     * This is an object with a null prototype to ensure that no
+     * properties are inherited. This also protects against plugins that
+     * are named `__proto__`.
+     *
+     * TODO: should the prototype be Object.freeze({}) instead?
      */
-    this.plugins = {};
+    this.plugins = Object.create(null);
     /* We must also track the list of the names of registered plugins
      * for dependency tracking. This list includes the names of plugins
      * that were "provided" by other plugins. The order happens to be
