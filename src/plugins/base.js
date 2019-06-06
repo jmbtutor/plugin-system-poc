@@ -50,7 +50,8 @@ class Base {
    * first argument.
    *
    * The return value for this function will be used as the value to
-   * expose through Core. In most cases, returning `this` will suffice.
+   * expose through Core. In most cases, returning `this` will suffice,
+   * but encapsulation can be achieved by returning a separate object.
    *
    * It is recommended to store a reference to Core here.
    *
