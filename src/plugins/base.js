@@ -31,6 +31,7 @@ class Base {
        * is called; if it is required only after `init`, do not add it
        * here. Core will use these to ensure that the dependencies of
        * all plugins are met before initializing the plugins.
+       * TODO: should this be called "depends" instead?
        */
       dependencies: [],
     };
