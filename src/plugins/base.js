@@ -47,19 +47,19 @@ class Base {
   }
 
   /* When Core receives a plugin to be registered, it calls the
-   * plugin's `register` function, passing in a reference to Core as the
-   * first argument.
+   * plugin's `register` function, passing in a reference to the object
+   * containing all plugins as the first argument.
    *
    * The return value for this function will be used as the value to
    * expose through Core. In most cases, returning `this` will suffice,
    * but encapsulation can be achieved by returning a separate object.
    *
-   * It is recommended to store a reference to Core here.
+   * It is recommended to store a reference to the plugins object here.
    *
    * At this point, one cannot assume the existence of other plugins.
    */
-  register(core) {
-    this.core = core;
+  register(plugins) {
+    this.core = plugins;
     return this;
   }
 

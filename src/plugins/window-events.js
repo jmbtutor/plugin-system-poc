@@ -16,7 +16,7 @@ class WindowEvents {
      * callback that was given to addEventListener. This is to allow the
      * removal of event listeners.
      */
-    this.listeners = {};
+    this.listeners = Object.create(null);
   }
 
   register(core) {
@@ -24,6 +24,8 @@ class WindowEvents {
     return this;
   }
 
+  /* These lifecycle events are not used, so we'll leave them empty.
+   */
   init() {}
   afterInit() {}
   onPluginRegister(plugins) {}
@@ -48,7 +50,8 @@ class WindowEvents {
 
   subscribeAll(listener) {
     const callback = (event) => {
-
+      const { type, detail } = event.detail;
+      listener(type, detail);
     };
     window.document.addEventListener(WindowEvents.internalEvents.DISPATCHED, callback);
 
@@ -59,9 +62,11 @@ class WindowEvents {
   }
 
   unsubscribe(eventName, listener) {
+    // TODO
   }
 
   unsubscribeAll(listener) {
+    // TODO
   }
 
   static get internalEvents() {
