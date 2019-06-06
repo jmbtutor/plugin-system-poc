@@ -83,6 +83,8 @@ class Core {
    * Such a process allows for circular dependencies between plugins, so
    * long as the plugins with circular dependencies are registered
    * together in the same batch.
+   *
+   * TODO: allow plugins to omit lifecycle event hooks.
    */
   registerPlugins(plugins) {
     /* The first step to registering the plugins is to collect all their
