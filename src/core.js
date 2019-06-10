@@ -131,7 +131,7 @@ class Core {
       /* First we add this plugin's dependencies to the list of required
        * plugins.
        */
-      metadata.dependencies.forEach((dependency) => {
+      metadata.depends.forEach((dependency) => {
         requiredDependencies.add(dependency);
       });
 
@@ -198,7 +198,7 @@ class Core {
       /* To help with safely unregistering plugins later, we add to the
        * dependency graph here.
        */
-      metadata.dependencies.forEach((dependency) => {
+      metadata.depends.forEach((dependency) => {
         /* Multiple instances of a plugin can be registered, so we keep
          * track of all instances in an array instead of using a Set.
          */
