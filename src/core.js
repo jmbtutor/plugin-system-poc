@@ -211,8 +211,9 @@ class Core {
 
       /* Now we expose the plugin value that we got earlier through the
        * plugins map. For each plugin that it provides, expose the
-       * plugin through that key. Use a getter so the plugin cannot be
-       * accidentally overwritten.
+       * plugin through that key if another plugin does not already
+       * provide it. Use a getter so the plugin cannot be accidentally
+       * overwritten.
        *
        * We will also add the plugin and its "provided" plugins to the
        * list of available plugins.
@@ -224,11 +225,13 @@ class Core {
       });
       this.availablePlugins.push(metadata.name);
       metadata.provides.forEach((provided) => {
-        Object.defineProperty(this.plugins, provided, {
-          configurable: true,
-          enumerable: true,
-          get() { return value; }
-        });
+        if (!(provided in this.plugins)) {
+          Object.defineProperty(this.plugins, provided, {
+            configurable: true,
+            enumerable: true,
+            get() { return value; }
+          });
+        }
         this.availablePlugins.push(provided);
       });
     });
