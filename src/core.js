@@ -31,7 +31,7 @@ class Core {
      *
      * TODO: should the prototype be Object.freeze({}) instead?
      */
-    this.dependencyMap = Object.create(null);
+    this.dependencyGraph = Object.create(null);
     /* Plugins provide a value to Core to expose through Core. To avoid
      * collisions with internal names, we expose them through a
      * `plugins` object, so collisions are limited only between plugins.
@@ -70,8 +70,8 @@ class Core {
    * processed.
    *
    * Registration has the following steps:
-   *  1. name registration
-   *  2. dependency checking
+   *  1. dependency checking
+   *  2. name registration
    *  3. initialization
    *  4. post-initialization
    * Each of these steps will be completed on the entire collection of
@@ -87,55 +87,128 @@ class Core {
    * TODO: allow plugins to omit lifecycle event hooks.
    */
   registerPlugins(plugins) {
-    /* The first step to registering the plugins is to collect all their
-     * names and dependencies. This will help us with dependency
-     * checking later on. We will also expose the plugin in the plugin
-     * map.
+    /* This function accepts an array whose items are plugins or a
+     * plugin/options pair (array). To simplify things, we'll normalize
+     * them all to pairs here.
      */
-    plugins.forEach((plugin) => {
-      /* We first grab the metadata for the plugin. This metadata
-       * contains information like the plugin's name, what plugins it
-       * "provides" and which plugins it depends on.
+    const normalizedPlugins = plugins.map((p) => Array.isArray(p) ? p : [p, {}]);
+    /* To ensure that all plugins will work as expected, we must check
+     * to make sure that all the dependencies across all of the new
+     * plugins are satisfied. We can do this by comparing our dependency
+     * set against the set of registered and to-be-registered plugins,
+     * and if we find any dependencies that are not already registered,
+     * they are not met and we throw an error.
+     *
+     * We will create temporary objects to use for this dependency
+     * checking so that the existing structures will not be failed if a
+     * dependency is not met.
+     */
+    const availablePlugins = new Set(this.availablePlugins);
+    const requiredDependencies = new Set();
+    normalizedPlugins.forEach(([{ metadata }]) => {
+      /* Each plugin provides metadata that gives the plugins' name,
+       * what plugins it "provides", and which plugins it depends on.
+       * We will use the information found in this object to check
+       * dependencies.
+       *
+       * We have destructured the plugin above to extract the metadata.
+       */
+
+      /* First we add this plugin's dependencies to the list of required
+       * plugins.
+       */
+      metadata.dependencies.forEach((dependency) => {
+        requiredDependencies.add(dependency);
+      });
+
+      /* Next we add this plugin and all the plugins it "provides" to
+       * the list of available plugins.
+       */
+      availablePlugins.add(metadata.name);
+      metadata.provides.forEach((provided) => {
+        availablePlugins.add(provided);
+      });
+    });
+
+    /* Now that we have the full list of required and available plugins,
+     * we simply have to do a set difference on the two (required \ available).
+     * If the resulting set is empty, then all dependencies will be
+     * satisfied. If it is not empty, we throw an error and abort the
+     * registration.
+     */
+    const available = new Set(availablePlugins);
+    const required = new Set(Object.keys(dependencyGraph));
+    const difference = new Set([...required].filter((p) => !available.has(p)));
+    if (difference.size) {
+      throw new Error('Unmet dependencies: ' + difference.values().sort().join(', '));
+    }
+
+    /* Once we have determined that all dependencies can be satisfied,
+     * we can proceed to register the components.
+     */
+    normalizedPlugins.forEach(([plugin, options]) => {
+      /* We will need the plugin's metadata for registration, so let's
+       * extract that here.
        */
       const { metadata } = plugin;
       /* We will then grab the name of the plugin to use for exposing
-       * its value.
-       * TODO: accept an alternate name as an option to allow multiple
-       * instances of the same plugin type.
+       * its value. This name will be used as the key in the plugins
+       * object.
        */
-      const name = metadata.name;
-      /* Next we call the plugin's register function with this object.
-       * The register function is expected to return a value to expose.
+      const key = options.name || metadata.name;
+      /* Next we prepare an overrides object to provide to the plugin's
+       * register function. This object will have this.plugins as its
+       * prototype so that it inherits all plugins by default, and its
+       * own properties are getters that return the proper plugin. This
+       * allows for specifying which plugin should satisfy a certain
+       * dependency for this plugin.
        */
-      const value = plugin.register(this);
+      const pluginsWithOverrides = Object.create(this.plugins);
+      if (options.overrides) {
+        for (let overrideKey in options.overrides) {
+          Object.defineProperty(pluginsWithOverrides, overrideKey, {
+            configurable: true,
+            enumerable: true,
+            get() { return this.plugins[overrideKey]; },
+          });
+        }
+      }
 
-      /* After all the plugins are registered, we will make sure that
-       * all of the dependencies for each of the plugins are satisfied.
-       * To help with that, we build a dependency-to-plugins map here.
+      /* Witht the overrides object prepared, we can now call the
+       * plugin's register function with the overries object. The
+       * register function is expected to return a value to expose
+       * through this.plugins.
+       */
+      const value = plugin.register(pluginsWithOverrides);
+
+      /* To help with safely unregistering plugins later, we add to the
+       * dependency graph here.
        */
       metadata.dependencies.forEach((dependency) => {
         /* Multiple instances of a plugin can be registered, so we keep
          * track of all instances in an array instead of using a Set.
          */
-        if (!this.dependencyMap[dependency]) {
-          this.dependencyMap[dependency] = [];
+        if (!this.dependencyGraph[dependency]) {
+          this.dependencyGraph[dependency] = [];
         }
 
-        this.dependencyMap[dependency].push(name);
+        this.dependencyGraph[dependency].push(metadata.name);
       });
 
       /* Now we expose the plugin value that we got earlier through the
        * plugins map. For each plugin that it provides, expose the
        * plugin through that key. Use a getter so the plugin cannot be
        * accidentally overwritten.
-       * TODO: make configurable which plugin is exposed for that key.
+       *
+       * We will also add the plugin and its "provided" plugins to the
+       * list of available plugins.
        */
-      Object.defineProperty(this.plugins, name, {
+      Object.defineProperty(this.plugins, key, {
         configurable: true,
         enumerable: true,
         get() { return value; }
       });
-      this.availablePlugins.push(name);
+      this.availablePlugins.push(metadata.name);
       metadata.provides.forEach((provided) => {
         Object.defineProperty(this.plugins, provided, {
           configurable: true,
@@ -146,55 +219,38 @@ class Core {
       });
     });
 
-    /* To ensure that all plugins will work as expected, we must check
-     * to make sure that all the dependencies across all of the new
-     * plugins are satisfied. We can do this by comparing our dependency
-     * set against the set of registered plugins (including the ones
-     * previously registered), and if we find any dependencies that are
-     * not already registered, they are not met and we throw an error.
+    /* After all plugins have registered their names and values, we can
+     * initialize them.
      */
-    const available = new Set(this.availablePlugins);
-    const required = new Set(Object.keys(this.dependencyMap));
-    const difference = new Set([...required].filter((p) => !available.has(p)));
-    if (difference.size) {
-      throw new Error('Unmet dependencies: ' + difference.values().sort().join(', '));
-    }
+    normalizedPlugins.forEach(([p]) => p.init());
 
-    /* At this point, we have ensured that all dependencies are
-     * satisfied and we can assume the plugins will work as intended. It
-     * is time to initialize them.
-     */
-    plugins.forEach((p) => p.init());
-
-    /* Now that all the plugins have been initialized, we will call each
+    /* After all the plugins have been initialized, we will call each
      * of the plugins' `afterInit` hook. This allows Plugin B to use the
      * functionality of Plugin A that is only available after it has
      * been initialized.
      *
      * TODO: determine if this should be asynchronous.
      */
-    plugins.forEach((p) => p.afterInit());
+    normalizedPlugins.forEach(([p]) => p.afterInit());
 
     /* All plugins should have completed their post-initialization and
      * should be ready to go, so we will notify the existing plugins that
      * there are new plugins available. Plugins may decide to enable
      * optional functionality given the presence of certain plugins.
      *
-     * TODO: use the custom name to allow multiple instances of the same
-     *       plugin.
      * TODO: make this object immutable.
      * TODO: determine if calling the callback should be asynchronous.
      */
-    const pluginData = plugins
-      .map(({ metadata }) => metadata)
-      .reduce((meta, data) => data[meta.name] = meta, {});
-    this.rawPlugins.forEach((p) => p.onPluginRegister(pluginData));
+    const pluginData = normalizedPlugins
+      .reduce(([{ metadata }, { name }], data) => data[name || metadata.name] = metadata, {});
+    this.rawPlugins
+      .forEach(([p]) => p.onPluginRegister(pluginData));
 
     /* To finish off, we will add the new plugins to the master list.
      * Adding these after we notify the other plugins makes notifying
      * just the existing plugins much easier.
      */
-    this.rawPlugins.push.apply(plugins);
+    this.rawPlugins.push.apply(normalizedPlugins);
   }
 
   // TODO: provide a way to unregister a plugin. It must check the
