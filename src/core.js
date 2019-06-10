@@ -151,7 +151,7 @@ class Core {
      * registration.
      */
     const available = new Set(availablePlugins);
-    const required = new Set(Object.keys(dependencyGraph));
+    const required = new Set(Object.keys(requiredDependencies));
     const difference = new Set([...required].filter((p) => !available.has(p)));
     if (difference.size) {
       throw new Error('Unmet dependencies: ' + difference.values().sort().join(', '));
@@ -188,7 +188,7 @@ class Core {
         }
       }
 
-      /* Witht the overrides object prepared, we can now call the
+      /* With the overrides object prepared, we can now call the
        * plugin's register function with the overries object. The
        * register function is expected to return a value to expose
        * through this.plugins.
@@ -256,7 +256,7 @@ class Core {
      * TODO: determine if calling the callback should be asynchronous.
      */
     const pluginData = normalizedPlugins
-      .reduce(([{ metadata }, { name }], data) => data[name || metadata.name] = metadata, {});
+      .reduce((data, [{ metadata }, { name }]) => data[name || metadata.name] = metadata, {});
     this.rawPlugins
       .forEach(([p]) => p.onPluginRegister(pluginData));
 
@@ -264,7 +264,7 @@ class Core {
      * Adding these after we notify the other plugins makes notifying
      * just the existing plugins much easier.
      */
-    this.rawPlugins.push.apply(normalizedPlugins);
+    this.rawPlugins.push.apply(this.rawPlugins, normalizedPlugins);
   }
 
   // TODO: provide a way to unregister a plugin. It must check the
