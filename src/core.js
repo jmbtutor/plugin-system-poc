@@ -84,6 +84,20 @@ class Core {
    * long as the plugins with circular dependencies are registered
    * together in the same batch.
    *
+   * The items in the array can either be the plugins themselves, or a
+   * two element array with the first element being the plugin and the
+   * second being the registration options.
+   *
+   * There are currently two registration options;
+   *  - name: the primary name under which to expose the plugin.
+   *  - overrides: alternative mappings for the plugin's dependency.
+   *               This is an object whose keys are the name to map from
+   *               and whose values are the names of the plugins to map
+   *               to. This mapping is not recursive. This can be used,
+   *               for example, if a plugin was registered under a
+   *               custom name, or if you want to use a specific plugin
+   *               to satisfy a dependency for that plugin.
+   *
    * TODO: allow plugins to omit lifecycle event hooks.
    */
   registerPlugins(plugins) {
