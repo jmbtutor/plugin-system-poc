@@ -1,6 +1,6 @@
 /* This is a sample base plugin.
  */
-class Base {
+class Example {
   /* Core will require some information about the plugin, and it will
    * call the metadata getter at registration time to do so.
    *
@@ -18,7 +18,7 @@ class Base {
        * The actual key used for this plugin can be overridden at
        * registration time.
        */
-      name: 'base',
+      name: 'example',
       /* If the plugin can stand in for another (possibly virtual)
        * plugin (i.e. conforms to its interface), the names should be
        * provided here. A plugin implicitly provides itself, so its name
@@ -94,4 +94,6 @@ class Base {
   onPluginRegister(plugins) {
     console.log('Example plugin onPluginRegister called:', plugins);
   }
+
+  // Additional plugin-specific methods can go here.
 }
