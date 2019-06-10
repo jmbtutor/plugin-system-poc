@@ -1,6 +1,6 @@
-/* This is a sample base plugin.
+/* This is an example plugin.
  */
-class Example {
+class ExamplePlugin {
   /* Core will require some information about the plugin, and it will
    * call the metadata getter at registration time to do so.
    *
@@ -45,6 +45,7 @@ class Example {
    */
   constructor(options) {
     console.log('Example plugin constructor called:', options);
+    this.options = options;
   }
 
   /* When Core receives a plugin to be registered, it calls the
