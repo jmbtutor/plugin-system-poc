@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <title></title>
+    <script src="./src/core.js"></script>
+    <script src="./src/plugins/example.js"></script>
+    <script src="./src/plugins/has-dependency.js"></script>
+    <script src="./src/plugins/has-unmet-dependency.js"></script>
+    <script src="./src/plugins/circular-a.js"></script>
+    <script src="./src/plugins/circular-b.js"></script>
+    <script>
+      var core = new Core;
+      var examplePlugin1 = new ExamplePlugin({ id: 1 });
+      var examplePlugin2 = new ExamplePlugin({ id: 2 });
+      var examplePlugin3 = new ExamplePlugin({ id: 3 });
+      var hasDependencyPlugin = new HasDependencyPlugin({ id: 3 });
+      var hasUnmetDependencyPlugin = new HasDependencyPlugin({ id: 3 });
+      var circularDependencyA = new CircularDependencyAPlugin;
+      var circularDependencyB = new CircularDependencyBPlugin;
+    </script>
+  </head>
+  <body>
+  </body>
+</html>
