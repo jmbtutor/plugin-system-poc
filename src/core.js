@@ -150,11 +150,9 @@ class Core {
      * satisfied. If it is not empty, we throw an error and abort the
      * registration.
      */
-    const available = new Set(availablePlugins);
-    const required = new Set(Object.keys(requiredDependencies));
-    const difference = new Set([...required].filter((p) => !available.has(p)));
+    const difference = new Set([...requiredDependencies].filter((p) => !availablePlugins.has(p)));
     if (difference.size) {
-      throw new Error('Unmet dependencies: ' + difference.values().sort().join(', '));
+      throw new Error('Unmet dependencies: ' + [...difference.values()].sort().join(', '));
     }
 
     /* Once we have determined that all dependencies can be satisfied,
