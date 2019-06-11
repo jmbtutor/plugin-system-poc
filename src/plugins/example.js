@@ -44,6 +44,9 @@ class ExamplePlugin {
    */
   constructor(options) {
     console.log('Example plugin constructor called:', options);
+    // Do stuff with the options. In this case, this plugin simply
+    // stores the options it gets, but one would normally use these
+    // options to configure some behaviour in the plugin itself.
     this.options = options;
   }
 
