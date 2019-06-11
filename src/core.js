@@ -14,7 +14,7 @@
  *  - has a value to expose
  *  - may depend on other plugins
  *
- * The structure of a plugin is given in more detail in the Base plugin.
+ * The structure of a plugin is given in more detail in the Example plugin.
  */
 class Core {
   /* To maintain flexibility, Core and the plugins are expected to be
