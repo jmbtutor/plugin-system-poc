@@ -89,6 +89,12 @@ comments of [`src/core.js`](./src/core.js) and
   much more flexible.
   - For example, this system allows for a logger plugin, even though it
     was not one of the requirements.
+  - This was inspired by Richard Harrison's
+    [recommendation][plugin-architecture]: "The biggest mistake that is
+    made when designing a plugin architecture is to start
+    differentiating between the actions that plugins will take. This is
+    wrong as your design starts to be artificially constrained from day
+    1."
 - If there are no defined plugin types, Core cannot assume that an
   "events" plugin will exist and therefore cannot use that to
   communicate with plugins. This led to Core communicating with the
@@ -97,6 +103,8 @@ comments of [`src/core.js`](./src/core.js) and
   way to handle circular dependencies. This was solved for registration
   by allowing plugins to be registered in a batch. Plugins in a
   dependency cycle must be registered in the same batch.
+
+[plugin-architecture]: http://chateau-logic.com/content/designing-plugin-architecture-application
 
 ## Unfinished work
 
