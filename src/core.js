@@ -174,6 +174,9 @@ class Core {
        * own properties are getters that return the proper plugin. This
        * allows for specifying which plugin should satisfy a certain
        * dependency for this plugin.
+       *
+       * Passing in this object instead of Core itself also protects the
+       * internals of Core from being modified by a plugin.
        */
       const pluginsWithOverrides = Object.create(this.plugins);
       if (options.overrides) {
