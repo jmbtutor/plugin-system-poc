@@ -46,6 +46,12 @@ describes the plugin's name, what plugins it "provides", and what
 plugins it depends on. Core will use this information when the plugin is
 registered. Plugins are intended to be configured at construction time.
 
+This system does not define what it means for a plugin to be
+"compatible" other than that it shares the same interface. The
+"provided" plugin need not actually exist; that is, it can be a
+"virtual" plugin. What the interface of such a plugin looks like will
+likely be up to precedence.
+
 Plugins are registered in batches to allow for circular dependencies.
 At registration time, each step in the registration process is completed
 for the batch before the next step is executed.
